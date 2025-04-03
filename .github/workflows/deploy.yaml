@@ -1,4 +1,4 @@
-name: Deploy to Minikube
+name: Deploy to Kubernetes
 
 on:
   push:
@@ -13,16 +13,24 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Set KUBECONFIG
-        run: echo "KUBECONFIG=${HOME}/.kube/config" >> $GITHUB_ENV
+        run: |
+          mkdir -p $HOME/.kube
+          echo "KUBECONFIG=${HOME}/.kube/config" >> $GITHUB_ENV
 
       - name: Start Minikube
-        run: |
-          minikube start --driver=docker
-          mkdir -p ~/.kube
-          minikube kubectl -- config view --raw > ~/.kube/config
+        run: minikube start --driver=docker
 
-      - name: Debug Minikube Files
-        run: ls -l ~/.minikube/profiles/minikube/ || echo "Minikube directory not found"
+      - name: Ensure Minikube is Running
+        run: minikube status
+
+      - name: Debug Minikube
+        run: ls -l ~/.minikube/profiles/minikube/
+
+      - name: Check Kubernetes Context
+        run: kubectl config view
 
       - name: Verify Kubernetes Nodes
-        run: kubectl get nodes   
+        run: kubectl get nodes
+
+      - name: Deploy to Kubernetes
+        run: kubectl apply -f k8s/   
