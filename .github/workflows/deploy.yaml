@@ -1,0 +1,28 @@
+name: Deploy to Minikube
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set KUBECONFIG
+        run: echo "KUBECONFIG=${HOME}/.kube/config" >> $GITHUB_ENV
+
+      - name: Start Minikube
+        run: |
+          minikube start --driver=docker
+          mkdir -p ~/.kube
+          minikube kubectl -- config view --raw > ~/.kube/config
+
+      - name: Debug Minikube Files
+        run: ls -l ~/.minikube/profiles/minikube/ || echo "Minikube directory not found"
+
+      - name: Verify Kubernetes Nodes
+        run: kubectl get nodes   
