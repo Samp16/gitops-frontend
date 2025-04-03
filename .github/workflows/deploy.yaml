@@ -14,8 +14,11 @@ jobs:
 
       - name: Set up kubectl
         run: |
-          echo "${{ secrets.KUBECONFIG }}" > kubeconfig
-          export KUBECONFIG=kubeconfig
+          echo "${{ secrets.KUBE_CONFIG_DATA }}" | base64 --decode > $HOME/.kube/config
+          export KUBECONFIG=$HOME/.kube/config
+
+      - name: Verify Cluster Access
+        run: kubectl get nodes
 
       - name: Deploy to Kubernetes
         run: kubectl apply -f k8s/
